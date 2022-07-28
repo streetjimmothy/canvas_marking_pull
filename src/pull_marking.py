@@ -7,7 +7,7 @@ from canvasapi import Canvas
 
 CONFIG_FILE = "config.json"
 
-def _load_course():
+def load_course():
     '''Load the configuration from file and create a session connecting to the relevant course.
 
     Returns the course object.
@@ -30,7 +30,7 @@ def _load_course():
     return course
 
 
-def _get_all_valid_submissions(course):
+def get_all_valid_submissions(course):
     '''Find all valid submissions for all tasks.
 
     Returns a dictionary of {assignment: list of submissions}.
@@ -51,13 +51,15 @@ def _get_all_valid_submissions(course):
     return valid_submissions
 
 
-def __speedgrader_link(course, assignment, submission):
+def speedgrader_link(course, assignment, submission):
     '''Get a speedgrader formatted link for viewing a specific submission on an assignment.'''
 
     return "https://swinburne.instructure.com/courses/" + str(course.id) + "/gradebook/speed_grader?assignment_id=" + str(assignment.id) + "&student_id=" + str(submission.user_id)
 
 
-def __find_lab(course, student_user_id):
+def find_lab(course, student_user_id):
+    '''Get string representation for the lab a specific student in a course is enrolled in.'''
+
     course_enrollments = [e for e in course.get_enrollments(user_id=student_user_id)]
     for en in course_enrollments:
         section = course.get_section(en.course_section_id)
@@ -67,7 +69,7 @@ def __find_lab(course, student_user_id):
     return "No lab"
 
 
-def _generate_csv(course, valid_submissions):
+def generate_csv(course, valid_submissions):
     '''Generate a csv called "marking.csv containing a summary of tasks that need feedback,
     and links to the speedgrader to show each task.
     '''
@@ -81,19 +83,19 @@ def _generate_csv(course, valid_submissions):
                 student_string = student_details.get(s.user_id)
                 if not student_string:
                     user = course.get_user(s.user_id)
-                    student_string = user.name + "," + str(user.login_id) + "," + __find_lab(course, s.user_id)
+                    student_string = user.name + "," + str(user.login_id) + "," + find_lab(course, s.user_id)
                     student_details[s.user_id] = student_string
 
                 f.write(assignment.name + ","
                     + student_string + ","
                     + s.submitted_at_date.strftime("%d %B") + ","
                     + str(s.attempt) + ","
-                    + __speedgrader_link(course, assignment, s)
+                    + speedgrader_link(course, assignment, s)
                     + "\n")
 
 
 if __name__ == "__main__":
-    course = _load_course()
+    course = load_course()
     print("Retrieving submissions for ", course.name, "needing feedback...")
-    valid_submissions = _get_all_valid_submissions(course)
-    _generate_csv(course, valid_submissions)
+    valid_submissions = get_all_valid_submissions(course)
+    generate_csv(course, valid_submissions)
