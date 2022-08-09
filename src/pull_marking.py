@@ -46,7 +46,8 @@ def get_all_valid_submissions(course):
             if s.submitted_at is not None # something was submitted
             and s.submitted_at_date <= a.due_at_date # it's not overdue
             and (s.graded_at is None or s.graded_at_date < s.submitted_at_date)] # it hasn't ever been graded, or the grade there is for an older submission
-        valid_submissions[a] = submissions
+        if len(submissions) > 0:
+            valid_submissions[a] = submissions
     
     return valid_submissions
 
@@ -74,18 +75,19 @@ def generate_csv(course, valid_submissions):
     and links to the speedgrader to show each task.
     '''
 
+    print("Generating csv...")
     student_details = {} # cache student details to avoid unnecessary requests; {userid: ("name, student_id, lab")}
 
     with open("marking.csv", "w+") as f:
         f.write("Task, Student, Student ID, Lab, Submitted on, Times assessed, Link\n")
         for assignment, submissions in valid_submissions.items():
+            print("- adding entries for", assignment.name)
             for s in submissions:
                 student_string = student_details.get(s.user_id)
                 if not student_string:
                     user = course.get_user(s.user_id)
                     student_string = user.name + "," + str(user.login_id) + "," + find_lab(course, s.user_id)
                     student_details[s.user_id] = student_string
-
                 f.write(assignment.name + ","
                     + student_string + ","
                     + s.submitted_at_date.strftime("%d %B") + ","
@@ -96,6 +98,6 @@ def generate_csv(course, valid_submissions):
 
 if __name__ == "__main__":
     course = load_course()
-    print("Retrieving submissions for ", course.name, "needing feedback...")
+    print("Retrieving submissions for", course.name, "needing feedback...")
     valid_submissions = get_all_valid_submissions(course)
     generate_csv(course, valid_submissions)
