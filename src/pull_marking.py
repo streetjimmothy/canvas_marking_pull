@@ -79,7 +79,7 @@ def generate_csv(course, valid_submissions):
     student_details = {} # cache student details to avoid unnecessary requests; {userid: ("name, student_id, lab")}
 
     with open("marking.csv", "w+") as f:
-        f.write("Task, Student, Student ID, Lab, Submitted on, Times assessed, Link\n")
+        f.write("Task, Student, Student ID, Lab, Submitted on, Submission number, Link\n")
         for assignment, submissions in valid_submissions.items():
             print("- adding entries for", assignment.name)
             for s in submissions:
