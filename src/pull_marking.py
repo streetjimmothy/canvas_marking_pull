@@ -32,7 +32,7 @@ def find_lab(course, student_user_id):
     course_enrollments = [e for e in course.get_enrollments(user_id=student_user_id)]
     for en in course_enrollments:
         section = course.get_section(en.course_section_id)
-        if "Lab" in section.name:
+        if "Class" in section.name:
             return section.name
 
     return "No lab"
