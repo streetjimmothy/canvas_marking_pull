@@ -16,9 +16,10 @@ def get_all_valid_submissions(course):
     valid_submissions = {}
     for a in course.get_assignments():
         print("- pulling submissions for", a.name)
+
         submissions = [s for s in a.get_submissions() 
             if s.submitted_at is not None # something was submitted
-            and s.submitted_at_date <= a.due_at_date # it's not overdue
+            and s.late == False # it's not overdue
             and (s.graded_at is None or s.graded_at_date < s.submitted_at_date)] # it hasn't ever been graded, or the grade there is for an older submission
         if len(submissions) > 0:
             valid_submissions[a] = submissions
